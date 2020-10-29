@@ -4,6 +4,7 @@ namespace Omnipay\MobilPay\Message;
 
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\RequestInterface;
+use stdClass;
 
 /**
  * MobilPay Complete Purchase Response
@@ -21,26 +22,44 @@ class CompletePurchaseResponse extends AbstractResponse
     protected $responseError;
 
     /**
+     * @var int
+     */
+    protected $errorCode;
+
+    /**
      * @var string
      */
     protected $status;
 
     /**
-     * @param  Omnipay\Common\Message\RequestInterface $request
-     * @param  array $data
-     * @param  stdClass $responseError
-     * @return void
+     * @param RequestInterface $request
+     * @param array $data
+     * @param stdClass $responseError
      */
     public function __construct(RequestInterface $request, $data, $responseError)
     {
         parent::__construct($request, $data);
 
-        $this->request       = $request;
+        $this->request = $request;
         $this->responseError = $responseError;
 
         if (isset($data['objPmNotify']['action'])) {
             $this->action = $data['objPmNotify']['action'];
         }
+
+        if (isset($data['objPmNotify']['errorCode'])) {
+            $this->errorCode = $data['objPmNotify']['errorCode'];
+        }
+    }
+
+    /**
+     * Response code
+     *
+     * @return null|string A response code from the payment gateway
+     */
+    public function getCode()
+    {
+        return $this->errorCode;
     }
 
     /**
@@ -50,7 +69,7 @@ class CompletePurchaseResponse extends AbstractResponse
      */
     public function isSuccessful()
     {
-        return in_array($this->action, ['confirmed']);
+        return $this->getCode() == 0 && in_array($this->action, ['confirmed']);
     }
 
     /**
@@ -60,7 +79,39 @@ class CompletePurchaseResponse extends AbstractResponse
      */
     public function isPending()
     {
-        return in_array($this->action, ['confirmed_pending', 'paid_pending', 'paid']);
+        if ($this->getCode() == 0) {
+            return in_array($this->action, ['confirmed_pending', 'paid_pending', 'paid']);
+        }
+
+        return parent::isPending();
+    }
+
+    /**
+     * Is the transaction cancelled by the user?
+     *
+     * @return boolean
+     */
+    public function isCancelled()
+    {
+        if ($this->getCode() == 0) {
+            return in_array($this->action, ['canceled']);
+        }
+
+        return $this->getCode() != 0;
+    }
+
+    /**
+     * Is the transaction refunded?
+     *
+     * @return boolean
+     */
+    public function isRefunded()
+    {
+        if ($this->getCode() == 0) {
+            return in_array($this->action, ['credit']);
+        }
+
+        return false;
     }
 
     /**

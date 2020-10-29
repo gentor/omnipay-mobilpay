@@ -7,21 +7,11 @@ processing library for PHP 5.4+. This package implements [MOBILPAY](http://www.m
 
 ## Installation
 
-Omnipay is installed via [Composer](http://getcomposer.org/). To install, simply add it
-to your `composer.json` file:
+Omnipay is installed via [Composer](http://getcomposer.org/). To install, simply run:
 
-```json
-{
-    "require": {
-        "adrianbarbos/omnipay-mobilpay": "~1.2.1"
-    }
-}
 ```
-
-And run composer to update your dependencies:
-
-    $ curl -s http://getcomposer.org/installer | php
-    $ php composer.phar update
+composer require gentor/omnipay-mobilpay
+```
 
 ## Basic Usage
 
@@ -61,40 +51,21 @@ $gateway->privateKeyPath('/path/to/private.key');
 $response = $gateway->completePurchase($_POST)->send();
 $response->sendResponse();
 
-switch($response->getMessage())
-{
-    case 'confirmed_pending': // transaction is pending review. After this is done, a new IPN request will be sent with either confirmation or cancellation
-
-        //update DB, SET status = "pending"
-
-        break;
-    case 'paid_pending': // transaction is pending review. After this is done, a new IPN request will be sent with either confirmation or cancellation
-
-        //update DB, SET status = "pending"
-
-        break;
-    case 'paid': // transaction is pending authorization. After this is done, a new IPN request will be sent with either confirmation or cancellation
-
-        //update DB, SET status = "open/preauthorized"
-
-        break;
-    case 'confirmed': // transaction is finalized, the money have been captured from the customer's account
-
-        //update DB, SET status = "confirmed/captured"
-
-        break;
-    case 'canceled': // transaction is canceled
-
-        //update DB, SET status = "canceled"
-
-        break;
-    case 'credit': // transaction has been refunded
-
-        //update DB, SET status = "refunded"
-
-        break;
+if ($response->isSuccessful()) {
+    return STATUS_COMPLETED;
 }
 
+if ($response->isCancelled()) {
+    return STATUS_CANCELED;
+}
+
+if ($response->isPending()) {
+    return STATUS_PENDING;
+}
+
+if ($response->isRefunded()) {
+    return STATUS_REFUNDED;
+}
 ```
 
 For general usage instructions, please see the main [Omnipay](https://github.com/omnipay/omnipay)

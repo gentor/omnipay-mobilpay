@@ -1,5 +1,5 @@
 {
-    "name": "adrianbarbos/omnipay-mobilpay",
+    "name": "gentor/omnipay-mobilpay",
     "description": "MobilPay driver for the Omnipay PHP payment processing library",
     "keywords": [
         "mobilpay",
@@ -10,18 +10,23 @@
         "payment",
         "purchase"
     ],
-    "homepage": "https://github.com/BusienssMastery/omnipay-mobilpay",
+    "homepage": "https://github.com/gentor/omnipay-mobilpay",
     "license": "MIT",
     "authors": [
         {
             "name": "Tudor Galanopulos",
             "email": "tudor@tudorg.ro"
+        },
+        {
+            "name": "Evgeni Nurkov",
+            "email": "evgeni.nurkov@gmail.com"
         }
     ],
     "require": {
         "php": ">=5.4.0",
         "omnipay/common": "~3.0",
-        "php-http/guzzle6-adapter": "~1.1.1"
+        "php-http/guzzle6-adapter": "~1.1.1",
+        "ext-json": "*"
     },
     "require-dev": {
         "omnipay/tests": "~2.0"
